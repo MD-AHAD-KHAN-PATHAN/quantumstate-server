@@ -33,7 +33,16 @@ async function run() {
 
 
     const userCollection = client.db('QuantumEstates').collection('users');
+    const propertyCollection = client.db('QuantumEstates').collection('propertys');
 
+    // Property related Api
+    app.post('/property', async (req, res) => {
+
+      const property = req.body;
+      const result = await propertyCollection.insertOne(property);
+      res.send(result);
+
+    })
 
 
     // Users Related API
