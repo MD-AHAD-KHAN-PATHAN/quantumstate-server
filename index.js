@@ -66,6 +66,16 @@ async function run() {
       const result = await propertyCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
+
+    // Agent Related API
+    app.get('/property/agent/:email', async (req, res) => {
+
+      const email = req.params.email;
+      const query = {email: email};
+      const result = await propertyCollection.find(query).toArray();
+      res.send(result);
+      
+    })
     
 
     // Users Related API
