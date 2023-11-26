@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 
@@ -36,14 +36,37 @@ async function run() {
     const propertyCollection = client.db('QuantumEstates').collection('propertys');
 
     // Property related Api
-    app.post('/property', async (req, res) => {
+    app.post('/propertys', async (req, res) => {
 
       const property = req.body;
       const result = await propertyCollection.insertOne(property);
       res.send(result);
 
     })
+    app.get('/propertys', async (req, res) => {
+      const result = await propertyCollection.find().toArray();
+      res.send(result);
+    })
+    app.get('/propertys/:id', async (req, res) => { 
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await propertyCollection.findOne(query);
+      res.send(result);
+    })
+    app.patch('/propertys/:id', async (req, res) => {
+      const id = req.params.id;
+      const status = req.body;
 
+      const query = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          verify: status.status
+        }
+      }
+      const result = await propertyCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
+    
 
     // Users Related API
     app.post('/users', async (req, res) => {
