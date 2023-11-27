@@ -34,6 +34,7 @@ async function run() {
 
     const userCollection = client.db('QuantumEstates').collection('users');
     const propertyCollection = client.db('QuantumEstates').collection('propertys');
+    const wishlistCollection = client.db('QuantumEstates').collection('wishlists');
 
     // Property related Api
     app.post('/propertys', async (req, res) => {
@@ -45,6 +46,14 @@ async function run() {
     })
     app.get('/propertys', async (req, res) => {
       const result = await propertyCollection.find().toArray();
+      res.send(result);
+    })
+    app.get('/propertys/verified/:status', async (req, res) => {
+      const verifyed = req.params.status;
+
+      const query = {verify: verifyed}
+      // console.log(query);
+      const result = await propertyCollection.find(query).toArray();
       res.send(result);
     })
     app.get('/propertys/:id', async (req, res) => { 
@@ -66,12 +75,7 @@ async function run() {
       const result = await propertyCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
-    app.delete('/propertys/:id', async (req, res) => { 
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-      const result = await propertyCollection.deleteOne(query);
-      res.send(result);
-    })
+  
 
     // Agent Related API
     app.get('/property/agent/:email', async (req, res) => {
@@ -80,7 +84,33 @@ async function run() {
       const query = {email: email};
       const result = await propertyCollection.find(query).toArray();
       res.send(result);
-      
+    })
+    app.patch('/propertys/agent/:id', async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+
+     
+      const query = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          title: data.title,
+          image: data.image,
+          country: data.country,
+          name: data.name,
+          email: data.email,
+          minimum: data.minimum,
+          maximum: data.maximum
+
+        }
+      }
+      const result = await propertyCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
+    app.delete('/propertys/:id', async (req, res) => { 
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await propertyCollection.deleteOne(query);
+      res.send(result);
     })
     
 
@@ -105,6 +135,12 @@ async function run() {
 
         const users = await userCollection.find().toArray();
         res.send(users);
+      })
+
+      app.post('/wishlists', async (req, res) => {
+        const wishlist = req.body;
+        const result = await wishlistCollection.insertOne(wishlist);
+        res.send(result);
       })
 
 
