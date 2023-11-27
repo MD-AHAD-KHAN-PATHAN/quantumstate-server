@@ -52,14 +52,14 @@ async function run() {
     app.get('/propertys/verified/:status', async (req, res) => {
       const verifyed = req.params.status;
 
-      const query = {verify: verifyed}
+      const query = { verify: verifyed }
       // console.log(query);
       const result = await propertyCollection.find(query).toArray();
       res.send(result);
     })
-    app.get('/propertys/:id', async (req, res) => { 
+    app.get('/propertys/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await propertyCollection.findOne(query);
       res.send(result);
     })
@@ -67,7 +67,7 @@ async function run() {
       const id = req.params.id;
       const status = req.body;
 
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           verify: status.status
@@ -76,13 +76,13 @@ async function run() {
       const result = await propertyCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
-  
+
 
     // Agent Related API
     app.get('/property/agent/:email', async (req, res) => {
 
       const email = req.params.email;
-      const query = {email: email};
+      const query = { email: email };
       const result = await propertyCollection.find(query).toArray();
       res.send(result);
     })
@@ -90,8 +90,8 @@ async function run() {
       const id = req.params.id;
       const data = req.body;
 
-     
-      const query = {_id: new ObjectId(id)};
+
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           title: data.title,
@@ -107,72 +107,118 @@ async function run() {
       const result = await propertyCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
-    app.delete('/propertys/:id', async (req, res) => { 
+    app.delete('/propertys/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await propertyCollection.deleteOne(query);
       res.send(result);
     })
-    
+
 
     // Users Related API
     app.post('/users', async (req, res) => {
-        const userInfo = req.body;
-  
-        console.log('user data : ',userInfo);
+      const userInfo = req.body;
 
-        const query = { email: userInfo.email };
-        const existingUser = await userCollection.findOne(query);
-  
-        if (existingUser) {
-          return res.send({ message: 'user already exists', insertedId: null })
+      console.log('user data : ', userInfo);
+
+      const query = { email: userInfo.email };
+      const existingUser = await userCollection.findOne(query);
+
+      if (existingUser) {
+        return res.send({ message: 'user already exists', insertedId: null })
+      }
+
+      const result = await userCollection.insertOne(userInfo);
+      res.send(result);
+    })
+    // ADMIN API
+    app.get('/users/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await userCollection.findOne(query);
+
+      let admin = false;
+      if (user) {
+        admin = user?.role === 'admin'
+      }
+      res.send({ admin })
+    })
+    // AGENT API
+    app.get('/users/agent/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await userCollection.findOne(query);
+
+      let agent = false;
+      if (user) {
+        agent = user?.role === 'agent'
+      }
+      res.send({ agent })
+    })
+
+    app.get('/users', async (req, res) => {
+
+      const users = await userCollection.find().toArray();
+      res.send(users);
+    })
+
+    app.post('/wishlists', async (req, res) => {
+      const wishlist = req.body;
+      const result = await wishlistCollection.insertOne(wishlist);
+      res.send(result);
+    })
+
+    app.get('/wishlists', async (req, res) => {
+      const result = await wishlistCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/wishlists/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishlistCollection.findOne(query);
+      res.send(result);
+    })
+    app.delete('/wishlists/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    })
+    app.post('/propertyBought', async (req, res) => {
+      const offerInfo = req.body;
+      const result = await offerCollection.insertOne(offerInfo);
+      res.send(result);
+    })
+    app.get('/propertyBought/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { buyerEmail: email }
+      const result = await offerCollection.find(query).toArray();
+      res.send(result);
+    })
+    app.get('/propertyBought/agent/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { agentEmail: email }
+      // console.log(query);
+      const result = await offerCollection.find(query).toArray();
+      res.send(result);
+    })
+    app.patch('/propertyBought/agent/:id', async (req, res) => {
+
+      const id = req.params.id;
+      const data = req.body;
+
+      const query = { _id: new ObjectId(id) }
+
+      const updatedDoc = {
+        $set: {
+          status: data.statuss
         }
-  
-        const result = await userCollection.insertOne(userInfo);
-        res.send(result);
-      })
-
-      app.get('/users', async (req, res) => {
-
-        const users = await userCollection.find().toArray();
-        res.send(users);
-      })
-
-      app.post('/wishlists', async (req, res) => {
-        const wishlist = req.body;
-        const result = await wishlistCollection.insertOne(wishlist);
-        res.send(result);
-      })
-
-      app.get('/wishlists', async (req, res) => {
-        const result = await wishlistCollection.find().toArray();
-        res.send(result);
-      })
-
-      app.get('/wishlists/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await wishlistCollection.findOne(query);
-        res.send(result);
-      })
-      app.delete('/wishlists/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await wishlistCollection.deleteOne(query);
-        res.send(result);
-      })
-      app.post('/propertyBought', async (req, res) => {
-        const offerInfo = req.body;
-        const result = await offerCollection.insertOne(offerInfo);
-        res.send(result);
-      })
-      app.get('/propertyBought/user/:email', async (req, res) => {
-        const email = req.params.email;
-        const query = { buyerEmail: email }
-        const result = await offerCollection.find(query).toArray();
-        res.send(result);
-      })
-
+      }
+      // console.log(updatedDoc);
+      const result = await offerCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
@@ -188,9 +234,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on port ${port}`);
 });
