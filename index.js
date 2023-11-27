@@ -66,6 +66,12 @@ async function run() {
       const result = await propertyCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
+    app.delete('/propertys/:id', async (req, res) => { 
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await propertyCollection.deleteOne(query);
+      res.send(result);
+    })
 
     // Agent Related API
     app.get('/property/agent/:email', async (req, res) => {
