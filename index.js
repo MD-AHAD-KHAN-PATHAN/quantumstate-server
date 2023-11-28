@@ -260,10 +260,32 @@ async function run() {
       const result = await reviewCollection.insertOne(reviewInfo);
       res.send(result);
     })
+    app.get('/reviews/admin', async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    })
     app.get('/reviews/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {productId: id};
+      const query = { productId: id };
       const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    })
+    app.get('/reviews/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { reviewerEmail: email };
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    })
+    app.delete('/reviews/user/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await reviewCollection.deleteOne(query);
+      res.send(result);
+    })
+    app.delete('/reviews/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await reviewCollection.deleteOne(query);
       res.send(result);
     })
 
