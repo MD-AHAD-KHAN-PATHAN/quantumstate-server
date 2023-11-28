@@ -117,6 +117,14 @@ async function run() {
       const result = await propertyCollection.deleteOne(query);
       res.send(result);
     })
+    app.get('/sold/agent/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { agentEmail: email };
+      // console.log(query);
+      const result = await paymentCollection.find(query).toArray();
+      // console.log(result);
+      res.send(result);
+    })
 
 
     // Users Related API
@@ -234,7 +242,7 @@ async function run() {
     })
     app.get('/propertyBought/user/pay/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await offerCollection.findOne(query);
       res.send(result);
     })
@@ -243,7 +251,7 @@ async function run() {
       const id = req.params.id;
       const statusUpdate = req.body;
 
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           status: statusUpdate?.status,
@@ -315,7 +323,7 @@ async function run() {
 
     //Stripe Payment API
     app.post('/create-payment-intent', async (req, res) => {
-      const {price} = req.body;
+      const { price } = req.body;
       const amount = parseInt(price * 100)
       console.log(amount);
       const paymentIntent = await stripe.paymentIntents.create({
