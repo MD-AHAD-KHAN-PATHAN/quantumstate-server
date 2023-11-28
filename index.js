@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
 
 const app = express();
 
@@ -37,6 +39,7 @@ async function run() {
     const wishlistCollection = client.db('QuantumEstates').collection('wishlists');
     const offerCollection = client.db('QuantumEstates').collection('offers');
     const reviewCollection = client.db('QuantumEstates').collection('reviews');
+    const paymentCollection = client.db('QuantumEstates').collection('payments');
 
     // Property related Api
     app.post('/propertys', async (req, res) => {
@@ -229,6 +232,27 @@ async function run() {
       const result = await offerCollection.find(query).toArray();
       res.send(result);
     })
+    app.get('/propertyBought/user/pay/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await offerCollection.findOne(query);
+      res.send(result);
+    })
+    // when payment successfull offer collection data status update to bought.
+    app.patch('/propertyBought/user/pay/:id', async (req, res) => {
+      const id = req.params.id;
+      const statusUpdate = req.body;
+
+      const query = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          status: statusUpdate?.status,
+          transactionId: statusUpdate?.transactionId
+        }
+      }
+      const result = await offerCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
     app.get('/propertyBought/agent/:email', async (req, res) => {
       const email = req.params.email;
       const query = { agentEmail: email }
@@ -289,12 +313,29 @@ async function run() {
       res.send(result);
     })
 
+    //Stripe Payment API
+    app.post('/create-payment-intent', async (req, res) => {
+      const {price} = req.body;
+      const amount = parseInt(price * 100)
+      console.log(amount);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
 
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
 
+    });
 
-
-
-
+    // Product payment API
+    app.post('/payments', async (req, res) => {
+      const paymentsInfo = req.body;
+      const result = await paymentCollection.insertOne(paymentsInfo);
+      res.send(result);
+    })
 
 
 
