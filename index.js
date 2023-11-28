@@ -36,6 +36,7 @@ async function run() {
     const propertyCollection = client.db('QuantumEstates').collection('propertys');
     const wishlistCollection = client.db('QuantumEstates').collection('wishlists');
     const offerCollection = client.db('QuantumEstates').collection('offers');
+    const reviewCollection = client.db('QuantumEstates').collection('reviews');
 
     // Property related Api
     app.post('/propertys', async (req, res) => {
@@ -143,6 +144,27 @@ async function run() {
       }
       res.send({ admin })
     })
+    app.patch('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const changeRole = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: changeRole?.role
+        }
+      }
+
+      const result = await userCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
+    app.delete('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    })
     // AGENT API
     app.get('/users/agent/:email', async (req, res) => {
       const email = req.params.email;
@@ -154,6 +176,17 @@ async function run() {
         agent = user?.role === 'agent'
       }
       res.send({ agent })
+    })
+    app.get('/users/fraud/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await userCollection.findOne(query);
+
+      let fraud = false;
+      if (user) {
+        fraud = user?.role === 'fraud'
+      }
+      res.send({ fraud })
     })
 
     app.get('/users', async (req, res) => {
@@ -219,6 +252,32 @@ async function run() {
       const result = await offerCollection.updateOne(query, updatedDoc);
       res.send(result);
     })
+
+    // User Review Related API
+
+    app.post('/reviews', async (req, res) => {
+      const reviewInfo = req.body;
+      const result = await reviewCollection.insertOne(reviewInfo);
+      res.send(result);
+    })
+    app.get('/reviews/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {productId: id};
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     // Send a ping to confirm a successful connection
