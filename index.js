@@ -388,6 +388,17 @@ async function run() {
       res.send(result);
     })
 
+    // Search api
+    app.get('/property/search/:title', async (req, res) => {
+      const searchData = req.params.title;
+      const query = {
+        title: searchData,
+        verify: 'verified'
+      }
+      console.log(query);
+      const result = await propertyCollection.find(query).toArray();
+      res.send(result);
+    })
 
 
 
