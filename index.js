@@ -378,6 +378,16 @@ async function run() {
     })
 
 
+    // Fraud data deleted API
+    app.delete('/fraud/data/:email', async (req, res) => {
+      const email = req.params.email;
+
+      const query = {email: email};
+      console.log(query);
+      const result = await propertyCollection.deleteMany(query);
+      res.send(result);
+    })
+
 
 
 
