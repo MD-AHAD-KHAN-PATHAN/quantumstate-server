@@ -40,6 +40,7 @@ async function run() {
     const offerCollection = client.db('QuantumEstates').collection('offers');
     const reviewCollection = client.db('QuantumEstates').collection('reviews');
     const paymentCollection = client.db('QuantumEstates').collection('payments');
+    const advertiseCollection = client.db('QuantumEstates').collection('advertise');
 
     // Property related Api
     app.post('/propertys', async (req, res) => {
@@ -211,7 +212,6 @@ async function run() {
       const result = await wishlistCollection.insertOne(wishlist);
       res.send(result);
     })
-
     app.get('/wishlists', async (req, res) => {
       const result = await wishlistCollection.find().toArray();
       res.send(result);
@@ -223,6 +223,13 @@ async function run() {
       const result = await wishlistCollection.findOne(query);
       res.send(result);
     })
+    app.get('/wishlists/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { buyerEmail: email }; 
+      const result = await wishlistCollection.find(query).toArray();
+      res.send(result); 
+    })
+
     app.delete('/wishlists/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -342,6 +349,31 @@ async function run() {
     app.post('/payments', async (req, res) => {
       const paymentsInfo = req.body;
       const result = await paymentCollection.insertOne(paymentsInfo);
+      res.send(result);
+    })
+
+    app.patch('/admin/propertys/:id', async (req, res) => {
+      const id = req.params.id;
+      const status = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          advertise: status.status
+        }
+      }
+      const result = await propertyCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    })
+    // advertise data collect
+    app.get('/advertise', async (req, res) => {
+      const query = { advertise: true };
+      const result = await propertyCollection.find(query).toArray();
+      res.send(result);
+    })
+    // Latest Review Collection
+    app.get('/latestreviews', async (req, res) => {
+      const result = await reviewCollection.find().toArray();
       res.send(result);
     })
 
