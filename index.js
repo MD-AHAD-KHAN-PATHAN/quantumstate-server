@@ -225,9 +225,9 @@ async function run() {
     })
     app.get('/wishlists/user/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { buyerEmail: email }; 
+      const query = { buyerEmail: email };
       const result = await wishlistCollection.find(query).toArray();
-      res.send(result); 
+      res.send(result);
     })
 
     app.delete('/wishlists/:id', async (req, res) => {
@@ -382,7 +382,7 @@ async function run() {
     app.delete('/fraud/data/:email', async (req, res) => {
       const email = req.params.email;
 
-      const query = {email: email};
+      const query = { email: email };
       console.log(query);
       const result = await propertyCollection.deleteMany(query);
       res.send(result);
@@ -395,13 +395,20 @@ async function run() {
         title: searchData,
         verify: 'verified'
       }
-      console.log(query);
       const result = await propertyCollection.find(query).toArray();
       res.send(result);
     })
 
-
-
+    // Implement a sort functionality based on the price range on the “All properties” page.
+    app.get('/property/sort', async (req, res) => {
+      const { minPrice, maxPrice } = req.query;
+      let query = {};
+      if (minPrice && maxPrice) {
+        query = { minimum: { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) }, verify: 'verified' };
+      }
+      const result = await propertyCollection.find(query).toArray();
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
