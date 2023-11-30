@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 
@@ -41,6 +42,8 @@ async function run() {
     const reviewCollection = client.db('QuantumEstates').collection('reviews');
     const paymentCollection = client.db('QuantumEstates').collection('payments');
     const advertiseCollection = client.db('QuantumEstates').collection('advertise');
+
+
 
     // Property related Api
     app.post('/propertys', async (req, res) => {
@@ -132,8 +135,6 @@ async function run() {
     app.post('/users', async (req, res) => {
       const userInfo = req.body;
 
-      console.log('user data : ', userInfo);
-
       const query = { email: userInfo.email };
       const existingUser = await userCollection.findOne(query);
 
@@ -144,9 +145,16 @@ async function run() {
       const result = await userCollection.insertOne(userInfo);
       res.send(result);
     })
+
+    app.get('/users', async (req, res) => {
+
+      const users = await userCollection.find().toArray();
+      res.send(users);
+    })
     // ADMIN API
     app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
+
       const query = { email: email }
       const user = await userCollection.findOne(query);
 
@@ -199,12 +207,6 @@ async function run() {
         fraud = user?.role === 'fraud'
       }
       res.send({ fraud })
-    })
-
-    app.get('/users', async (req, res) => {
-
-      const users = await userCollection.find().toArray();
-      res.send(users);
     })
 
     app.post('/wishlists', async (req, res) => {
